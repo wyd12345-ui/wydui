@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>场景三</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .scene-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .system-prompt {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 24px;
+            z-index: 1000;
+            font-family: "Courier New", monospace;
+        }
+
+        .next-page-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .next-page-button:hover {
+            transform: scale(1.1);
+        }
+
+        .confirm-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff;
+            text-align: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .confirm-dialog.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .confirm-dialog .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .confirm-dialog .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .confirm-dialog button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .confirm-dialog button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .archive-content {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff;
+            max-width: 40%;
+            max-height: 60vh;
+            overflow-y: auto;
+            z-index: 1000;
+            font-family: "Courier New", monospace;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .archive-content.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scene1-archive {
+            top: 20%;
+            left: 25%;
+            transform: translate(-50%, 20px);
+            transition-delay: 0.3s;
+        }
+
+        .scene1-archive.show {
+            transform: translate(-50%, 0);
+        }
+
+        .scene2-archive {
+            top: 20%;
+            right: 25%;
+            transform: translate(50%, 20px);
+            transition-delay: 0.3s;
+        }
+
+        .scene2-archive.show {
+            transform: translate(50%, 0);
+        }
+
+        .archive-content h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .archive-item {
+            margin-bottom: 15px;
+        }
+
+        .archive-item h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .archive-item ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .archive-item li {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .ending-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            color: #fff;
+            max-width: 80%;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .ending-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+            font-family: "Courier New", monospace;
+        }
+
+        .ending-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #fff;
+            font-family: "Courier New", monospace;
+        }
+
+        .view-ending-button {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: "Courier New", monospace;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .view-ending-button.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .view-ending-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .view-ending-button:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .choice-prompt {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 20px;
+            font-family: "Courier New", monospace;
+            z-index: 1000;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .ending-conditions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 16px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: left;
+            white-space: pre-line;
+        }
+
+        .ending-buttons {
+            position: fixed;
+            top: calc(40% + 200px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            z-index: 1000;
+        }
+
+        .ending-buttons.show {
+            opacity: 1;
+        }
+
+        .ending-button {
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: "Courier New", monospace;
+            transition: all 0.3s ease;
+        }
+
+        .ending-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .ending-button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video id="bgVideo" class="video-background" muted loop playsinline autoplay>
+            <source src="./assets/scene3.mp4" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+
+    <!-- 添加背景音乐 -->
+    <audio id="bgm" loop>
+        <source src="assets/audio/main_bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="scene-content">
+        <div class="system-prompt">场景三：档案馆</div>
+        <div class="choice-prompt">你的选择：</div>
+        <div class="archive-content scene1-archive" id="scene1Archive"></div>
+        <div class="archive-content scene2-archive" id="scene2Archive"></div>
+        <div class="ending-content" id="endingContent" style="display: none;"></div>
+        <div class="ending-buttons" id="endingButtons">
+            <button class="ending-button" id="restartButton">再次探索</button>
+            <button class="ending-button" id="confirmButton">好的</button>
+        </div>
+        <button class="view-ending-button" id="viewEndingButton">点击查看你的探索结局</button>
+        <button class="next-page-button" id="nextPageButton" style="display: none;">→</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('bgVideo');
+            const bgm = document.getElementById('bgm');
+            const debugInfo = document.getElementById('debug-info');
+            // 获取内容元素
+            const scene1Archive = document.getElementById('scene1Archive');
+            const scene2Archive = document.getElementById('scene2Archive');
+            const endingContent = document.getElementById('endingContent');
+            const nextPageButton = document.getElementById('nextPageButton');
+            const viewEndingButton = document.getElementById('viewEndingButton');
+
+            // 读取场景一的选择
+            const scene1Choices = JSON.parse(localStorage.getItem('scene1Choices') || '{"unofficial":[],"official":[]}');
+            // 读取场景二的存档状态
+            const scene2ArchiveStatus = {
+                recorder: localStorage.getItem('recorderState') === 'collected',
+                letter: localStorage.getItem('letterStatus') === 'collected',
+                frame: localStorage.getItem('frameStatus') === 'collected'
+            };
+
+            // 显示场景一的档案内容
+            let scene1HTML = `
+                <h2>场景一：邮局</h2>
+                <div class="archive-item">
+                    <h3>未公开版本</h3>
+                    <ul>
+                        ${scene1Choices.unofficial.map(text => `<li>${text}</li>`).join('') || '<li>无记录</li>'}
+                    </ul>
+                </div>
+                <div class="archive-item">
+                    <h3>官方版本</h3>
+                    <ul>
+                        ${scene1Choices.official.map(text => `<li>${text}</li>`).join('') || '<li>无记录</li>'}
+                    </ul>
+                </div>
+            `;
+            scene1Archive.innerHTML = scene1HTML;
+
+            // 显示场景二的档案内容
+            let scene2HTML = `
+                <h2>场景二：居民客厅</h2>
+                <div class="archive-item">
+                    <h3>存档状态</h3>
+                    <ul>
+                        <li>录音机：${scene2ArchiveStatus.recorder ? '已存档' : '未存档'}</li>
+                        <li>信件：${scene2ArchiveStatus.letter ? '已存档' : '未存档'}</li>
+                        <li>相框：${scene2ArchiveStatus.frame ? '已存档' : '未存档'}</li>
+                    </ul>
+                </div>
+            `;
+            scene2Archive.innerHTML = scene2HTML;
+
+            // 添加显示类
+            setTimeout(() => {
+                scene1Archive.classList.add('show');
+                scene2Archive.classList.add('show');
+                
+                // 对话框动画完成后等待2秒再显示按钮
+                setTimeout(() => {
+                    viewEndingButton.classList.add('show');
+                }, 2000);
+            }, 100);
+
+            // 点击按钮显示结局
+            viewEndingButton.addEventListener('click', function() {
+                // 计算存档数量
+                const totalArchived = Object.values(scene2ArchiveStatus).filter(status => status).length;
+                const unofficialCount = scene1Choices.unofficial.length;
+                const officialCount = scene1Choices.official.length;
+
+                // 判断结局
+                let ending;
+                if (unofficialCount >= 2 && totalArchived < 2) {
+                    ending = {
+                        content: "你选择了相信官方版本，选择了表面的平静。你成为了新时代的历史记录官，继续讲述着那些被官方认可的\"伟大胜利\"。那些未被存档的故事，那些被遗忘的声音，就这样永远消失在历史的长河中。"
+                    };
+                } else if (totalArchived >= 2 && (scene2ArchiveStatus.recorder || scene2ArchiveStatus.letter) && unofficialCount >= 1) {
+                    ending = {
+                        content: "你听到了那些被压抑的声音，看到了那些被隐藏的真相。录音机里的声音，信件中的文字，都在诉说着普通人的故事。你选择将这些声音编织成一部充满杂音的历史档案，让这些普通人的声音得以保存。"
+                    };
+                } else if (officialCount > 0 && unofficialCount === 0 && totalArchived <= 1) {
+                    ending = {
+                        content: "面对这些材料，你选择了沉默。你决定将这些故事隐藏起来，不再将它们公之于众。也许有些真相，注定要被永远埋藏。"
+                    };
+                } else {
+                    ending = {
+                        content: "你的选择形成了一个独特的组合，这个故事还有待继续探索。也许下一次，你会发现不同的真相。"
+                    };
+                }
+
+                // 同时淡出所有对话框和提示词
+                const elements = [
+                    scene1Archive,
+                    scene2Archive,
+                    document.querySelector('.choice-prompt'),
+                    document.querySelector('.system-prompt')
+                ];
+
+                elements.forEach(element => {
+                    element.style.transition = 'opacity 0.8s ease';
+                    element.style.opacity = '0';
+                });
+
+                // 显示结局
+                endingContent.innerHTML = `
+                    <div class="ending-text">${ending.content}</div>
+                `;
+                endingContent.style.display = 'block';
+                endingContent.style.opacity = '0';
+                endingContent.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                endingContent.style.transition = 'all 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+
+                // 等待所有元素淡出动画完成后，显示结局对话框
+                setTimeout(() => {
+                    endingContent.style.opacity = '1';
+                    endingContent.style.transform = 'translate(-50%, -60%) scale(1)';
+                    nextPageButton.style.display = 'flex';
+                    viewEndingButton.style.display = 'none';
+                    
+                    // 显示结局按钮（延迟2秒）
+                    setTimeout(() => {
+                        document.getElementById('endingButtons').classList.add('show');
+                    }, 2000);
+                }, 800);
+
+                // 添加按钮点击事件
+                document.getElementById('restartButton').addEventListener('click', function() {
+                    // 清除所有存档
+                    localStorage.removeItem('scene1Choices');
+                    localStorage.removeItem('recorderState');
+                    localStorage.removeItem('letterStatus');
+                    localStorage.removeItem('frameStatus');
+                    // 跳转到首页
+                    window.location.href = './index.html';
+                });
+
+                document.getElementById('confirmButton').addEventListener('click', function() {
+                    // 停止背景音乐
+                    bgm.pause();
+                    bgm.currentTime = 0;
+                    
+                    // 淡出对话框和按钮
+                    endingContent.style.transition = 'opacity 0.8s ease';
+                    endingButtons.style.transition = 'opacity 0.8s ease';
+                    endingContent.style.opacity = '0';
+                    endingButtons.style.opacity = '0';
+                    
+                    // 等待淡出动画完成后显示下一页按钮
+                    setTimeout(() => {
+                        endingContent.style.display = 'none';
+                        endingButtons.style.display = 'none';
+                        nextPageButton.style.display = 'block';
+                    }, 800);
+                });
+            });
+
+            // 设置背景音乐
+            bgm.volume = 0.15; // 设置音量为15%
+            bgm.play().catch(error => {
+                console.error('背景音乐播放失败:', error);
+            });
+
+            // 当页面隐藏时暂停背景音乐
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    bgm.pause();
+                } else {
+                    bgm.play().catch(error => {
+                        console.error('背景音乐播放失败:', error);
+                    });
+                }
+            });
+
+            // 当离开页面时保存背景音乐状态
+            window.addEventListener('beforeunload', function() {
+                localStorage.setItem('bgmTime', bgm.currentTime);
+            });
+
+            // 检查是否有保存的背景音乐播放位置
+            const savedBgmTime = localStorage.getItem('bgmTime');
+            if (savedBgmTime) {
+                bgm.currentTime = parseFloat(savedBgmTime);
+            }
+        });
+
+        // 添加下一页按钮点击事件
+        const nextPageButton = document.getElementById('nextPageButton');
+        nextPageButton.addEventListener('click', function() {
+            // 这里可以添加跳转到下一个场景的逻辑
+            window.location.href = './scene4.html';
+        });
+    </script>
+</body>
+</html> 

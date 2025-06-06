@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>场景二 - 沉默档案：2586</title>
+    <link rel="stylesheet" href="styles.css"/>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: "Courier New", monospace;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .video-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .scene-content {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            color: #fff;
+            text-shadow: none;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+        }
+
+        .scene-content h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        /* 添加系统提示词样式 */
+        .system-prompt {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            z-index: 10;
+            opacity: 1;
+            animation: none;
+        }
+
+        #debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 4;
+        }
+
+        .magnifier {
+            position: fixed;
+            width: 150px;
+            height: 150px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            display: none;
+            z-index: 5;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .magnifier img {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .hover-area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .item-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 65%;
+            height: 65%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 6;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .item-overlay img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: opacity 3s ease;
+        }
+
+        .item-overlay .content-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transform: translateX(-2%);
+        }
+
+        /* 添加图片容器样式 */
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 3s ease, transform 2s ease;
+        }
+
+        .image-container img.active {
+            opacity: 1;
+        }
+
+        .image-container img.move-left {
+            transform: translate(-120%, -50%);
+        }
+
+        /* 添加信件内容样式 */
+        .letter-content {
+            position: absolute;
+            top: 50%;
+            right: 10%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-family: "Courier New", monospace;
+            font-size: 18px;
+            line-height: 1.6;
+            max-width: 40%;
+            opacity: 0;
+            transition: all 1.5s ease;
+            white-space: pre-line;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .letter-content.active {
+            opacity: 1;
+            animation: fadeInLetter 1.5s ease forwards;
+        }
+
+        @keyframes fadeInLetter {
+            from {
+                opacity: 0;
+                transform: translateY(-50%) translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0);
+            }
+        }
+
+        .interactive-item {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 4;
+        }
+
+        .interactive-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* 临时调试用的圆圈样式 */
+        .debug-circle {
+            position: absolute;
+            border: 2px solid rgba(255, 0, 0, 0.5);
+            border-radius: 50%;
+            background: rgba(255, 0, 0, 0.1);
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        /* 添加金色光圈样式 */
+        .golden-glow {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+            animation: glowPulse 2s infinite;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
+                       0 0 60px rgba(255, 215, 0, 0.4),
+                       0 0 90px rgba(255, 215, 0, 0.2);
+            border: 4px solid rgba(255, 215, 0, 0.9);
+            background: radial-gradient(circle at center,
+                rgba(255, 215, 0, 0.4) 0%,
+                rgba(255, 215, 0, 0.2) 50%,
+                rgba(255, 215, 0, 0.1) 100%);
+            transform-origin: center;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                opacity: 0.5;
+                transform: scale(0.95);
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
+                           0 0 60px rgba(255, 215, 0, 0.4),
+                           0 0 90px rgba(255, 215, 0, 0.2);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+                box-shadow: 0 0 40px rgba(255, 215, 0, 0.9),
+                           0 0 80px rgba(255, 215, 0, 0.5),
+                           0 0 120px rgba(255, 215, 0, 0.3);
+            }
+            100% {
+                opacity: 0.5;
+                transform: scale(0.95);
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
+                           0 0 60px rgba(255, 215, 0, 0.4),
+                           0 0 90px rgba(255, 215, 0, 0.2);
+            }
+        }
+
+        /* 添加遮罩层样式 */
+        .overlay-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: 5;
+            display: none;
+        }
+
+        /* 修改手势识别界面样式 */
+        .handpose-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            overflow: hidden;
+            z-index: 7;
+            display: none;
+        }
+
+        .handpose-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .handpose-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 添加确认对话框样式 */
+        .confirm-dialog {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 8;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .confirm-dialog.active {
+            opacity: 1;
+        }
+
+        .confirm-dialog .message {
+            font-size: 18px;
+        }
+
+        .confirm-dialog .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .confirm-dialog button {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-dialog button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 添加粒子效果样式 */
+        .dust-particle {
+            position: absolute;
+            background: rgba(200, 200, 200, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9;
+            transition: transform 2.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 2.5s ease;
+        }
+
+        .frame-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .frame-image {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            transition: all 3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .frame-image.original {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .frame-image.revealed {
+            opacity: 0;
+            z-index: 2;
+            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .frame-image.revealed.moved {
+            max-width: 60%;
+            max-height: 60%;
+            transform: translate(-77%, -55%);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 添加文字样式 */
+        .revealed-text {
+            position: absolute;
+            right: 5%;
+            top: 47%;
+            transform: translateY(-50%);
+            color: white;
+            font-family: "Courier New", monospace;
+            font-size: 20px;
+            line-height: 1.5;
+            max-width: 25%;
+            opacity: 0;
+            transition: opacity 1s ease;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            padding-right: 20px;
+        }
+
+        .revealed-text.active {
+            opacity: 1;
+        }
+
+        .blow-hint {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .blow-hint.active {
+            opacity: 1;
+        }
+
+        /* 添加状态提示对话框样式 */
+        .status-dialog {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 8;
+        }
+
+        .status-dialog.active {
+            opacity: 1;
+        }
+
+        /* 添加录音机播放按钮样式 */
+        .recorder-play-button {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .recorder-play-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 添加虚拟手指样式 */
+        .virtual-finger {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 0, 0, 0.5);
+            border: 2px solid rgba(255, 0, 0, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 8;
+            transition: all 0.1s ease;
+            display: none;
+        }
+
+        /* 添加调试信息样式 */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9;
+        }
+
+        /* 添加测试按钮样式 */
+        .test-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .test-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        /* 添加下一页按钮样式 */
+        .next-page-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .next-page-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video id="bgVideo" class="video-bg" muted loop playsinline>
+            <source src="assets/scene2.mp4" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+
+    <!-- 添加背景音乐 -->
+    <audio id="bgm" loop>
+        <source src="assets/audio/main_bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 添加下一页按钮 -->
+    <div class="next-page-button" id="nextPageButton">→</div>
+
+    <!-- 可点击区域 -->
+    <div class="hover-area" id="hoverArea"></div>
+
+    <!-- 临时调试用的圆圈 -->
+    <div id="debugCircles"></div>
+
+    <!-- 物品详情弹窗 -->
+    <div class="item-overlay" id="itemOverlay">
+        <div class="content-container">
+            <div class="image-container">
+                <img id="itemImage" src="" alt="物品详情">
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加遮罩层 -->
+    <div class="overlay-backdrop" id="overlayBackdrop"></div>
+
+    <!-- 添加手势识别界面 -->
+    <div class="handpose-container" id="handposeContainer">
+        <video id="cameraVideo" playsinline></video>
+        <canvas id="handposeCanvas"></canvas>
+    </div>
+
+    <div class="scene-content">
+        <h1>场景二：居民客厅</h1>
+    </div>
+
+    <!-- 添加系统提示词 -->
+    <div class="system-prompt" id="systemPrompt">点击三个物体获得线索</div>
+
+    <div id="debug-info"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('bgVideo');
+            const bgm = document.getElementById('bgm');
+            const debugInfo = document.getElementById('debug-info');
+            const hoverArea = document.getElementById('hoverArea');
+            const itemOverlay = document.getElementById('itemOverlay');
+            const itemImage = document.getElementById('itemImage');
+            const debugCircles = document.getElementById('debugCircles');
+            const overlayBackdrop = document.getElementById('overlayBackdrop');
+            const handposeContainer = document.getElementById('handposeContainer');
+            const cameraVideo = document.getElementById('cameraVideo');
+            const handposeCanvas = document.getElementById('handposeCanvas');
+            const canvasCtx = handposeCanvas.getContext('2d');
+
+            let hands;
+            let isLetterUnrolling = false;
+            let letterRolledImage = 'assets/table_letter_rolled.png';
+            let letterUnrolledImage = 'assets/table_letter.png';
+            let lastHandPosition = null;
+            let swipeThreshold = 100;
+            let isSwipeDetected = false;
+            let letterStatus = null; // 添加状态记录：'collected' 或 'not_collected'
+
+            // 添加吹气检测和粒子效果相关变量
+            let isBlowing = false;
+            let dustParticles = [];
+            let frameStatus = null; // 添加状态记录：'collected' 或 'not_collected'
+            let originalFrameImage = 'assets/wall_frame.png';
+            let revealedFrameImage = 'assets/assetswall_frame_revealed.png';
+            let currentAudioIndex = 0; // 添加当前播放的音频索引
+            let audioContext = null; // 添加音频上下文
+            let audioElements = []; // 添加音频元素数组
+
+            // 修改录音机状态变量
+            let recorderState = {
+                isPlaying: false,
+                currentAudioIndex: 0,
+                lastPinchTime: 0,
+                pinchCount: 0,
+                isMinimized: false,
+                isCollected: null,  // 添加收录状态
+                hasPlayedSecond: false  // 添加是否播放过第二段录音的状态
+            };
+
+            // 添加状态变量
+            let isRecorderActive = false;
+            let isLetterActive = false;
+            let archiveStatus = {
+                recorder: false,
+                letter: false,
+                frame: false
+            };
+
+            // 更新存档状态并保存到localStorage
+            function updateArchiveStatus() {
+                localStorage.setItem('scene2ArchiveStatus', JSON.stringify(archiveStatus));
+            }
+
+            // 在确认存档时更新状态
+            function handleArchive(item) {
+                archiveStatus[item] = true;
+                updateArchiveStatus();
+            }
+
+            // 添加录音文案
+            const recordingTexts = [
+                "\"安妮........你还好吗？我今天去找你，志愿者说你已经去了前线。你总是说你能照顾好自己，但我还是担心你带够水了吗？你的防护装备戴好了吗？他们说你现在是英雄了，你给这片废墟带来了希望.........但我只想知道你什么时候可以回家和我一起吃晚饭。\"",
+                "\"我们从废墟中救出了十几个人。8个没有成功。新闻说我们是一个奇迹——幸存者们感激涕零，面带微笑—— 但是他们没有拍到那个小女孩抓着我的手，问她妈妈去了哪里。我不知道该说什么。所以我把目光移开，假装没听见。\""
+            ];
+
+            // 添加光影交互相关变量
+            let lightScene, lightCamera, lightRenderer;
+            let lightMesh, lightRaycaster, lightMouse;
+            let isLightActive = false;
+
+            // 初始化MediaPipe Hands
+            function initHands() {
+                hands = new Hands({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                    }
+                });
+
+                hands.setOptions({
+                    maxNumHands: 1,
+                    modelComplexity: 1, // 提高模型复杂度以提高准确性
+                    minDetectionConfidence: 0.7, // 提高检测置信度
+                    minTrackingConfidence: 0.7 // 提高跟踪置信度
+                });
+
+                hands.onResults(onResults);
+            }
+
+            // 修改手势识别结果处理函数
+            function onResults(results) {
+                // 使用 requestAnimationFrame 优化渲染
+                requestAnimationFrame(async () => {
+                    canvasCtx.save();
+                    canvasCtx.clearRect(0, 0, handposeCanvas.width, handposeCanvas.height);
+                    
+                    if (results.multiHandLandmarks) {
+                        for (const landmarks of results.multiHandLandmarks) {
+                            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+                                color: '#00FF00',
+                                lineWidth: 2
+                            });
+                            drawLandmarks(canvasCtx, landmarks, {
+                                color: '#FF0000',
+                                lineWidth: 1
+                            });
+
+                            // 获取食指和拇指位置
+                            const indexFinger = landmarks[8]; // 食指指尖
+                            const thumbTip = landmarks[4]; // 拇指指尖
+                            
+                            // 计算食指和拇指之间的距离
+                            const distance = Math.sqrt(
+                                Math.pow(indexFinger.x - thumbTip.x, 2) + 
+                                Math.pow(indexFinger.y - thumbTip.y, 2)
+                            );
+                            
+                            // 当距离小于阈值时认为是捏合手势
+                            if (distance < 0.1) {
+                                // 根据当前交互对象执行不同的操作
+                                if (isRecorderActive) {
+                                    // 录音机的捏合手势处理
+                                    const currentTime = Date.now();
+                                    // 防止重复触发，设置最小间隔为500ms
+                                    if (currentTime - recorderState.lastPinchTime > 500) {
+                                        recorderState.lastPinchTime = currentTime;
+                                        recorderState.pinchCount++;
+                                        
+                                        console.log(`录音机捏合手势 #${recorderState.pinchCount}`);
+                                        
+                                        // 根据捏合次数执行不同操作
+                                        switch (recorderState.pinchCount % 2) {
+                                            case 1: // 第一次捏合
+                                                if (!recorderState.isMinimized) {
+                                                    animateRecorder();
+                                                }
+                                                await playCurrentAudio();
+                                                recorderState.isPlaying = true;
+                                                break;
+                                            case 0: // 第二次捏合
+                                                recorderState.currentAudioIndex = (recorderState.currentAudioIndex + 1) % audioElements.length;
+                                                await playCurrentAudio();
+                                                recorderState.isPlaying = true;
+                                                // 更新文案
+                                                showRecordingText(recorderState.currentAudioIndex);
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    canvasCtx.restore();
+                });
+
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    const landmarks = results.multiHandLandmarks[0];
+                    const palmCenter = landmarks[0];
+
+                    if (lastHandPosition === null) {
+                        lastHandPosition = palmCenter;
+                    } else {
+                        const dx = palmCenter.x - lastHandPosition.x;
+                        
+                        // 只在信纸激活时检测滑动
+                        if (isLetterActive) {
+                            // 检测从左向右的滑动
+                            if (dx > 0.03 && !isSwipeDetected) {
+                                isSwipeDetected = true;
+                                if (!isLetterUnrolling) {
+                                    isLetterUnrolling = true;
+                                    unrollLetter();
+                                }
+                            } else if (Math.abs(dx) < 0.01) {
+                                isSwipeDetected = false;
+                            }
+                        }
+                        
+                        lastHandPosition = palmCenter;
+                    }
+                } else {
+                    lastHandPosition = null;
+                    isSwipeDetected = false;
+                }
+            }
+
+            // 添加停止所有音频的函数
+            function stopAllAudio() {
+                audioElements.forEach(audio => {
+                    if (audio) {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
+                });
+                console.log('停止所有音频播放');
+            }
+
+            // 修改音频播放函数
+            async function playCurrentAudio() {
+                try {
+                    // 确保音频上下文存在
+                    if (!audioContext) {
+                        console.log('创建新的音频上下文');
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+
+                    // 确保音频上下文处于运行状态
+                    if (audioContext.state === 'suspended') {
+                        console.log('恢复音频上下文');
+                        await audioContext.resume();
+                    }
+
+                    const currentAudio = audioElements[recorderState.currentAudioIndex];
+                    if (!currentAudio) {
+                        console.error('当前音频元素不存在');
+                        return;
+                    }
+
+                    console.log(`准备播放音频${recorderState.currentAudioIndex + 1}`);
+                    console.log(`音频状态:`, currentAudio.readyState);
+                    console.log(`音频路径:`, currentAudio.src);
+
+                    // 停止所有音频
+                    stopAllAudio();
+
+                    // 重置当前音频
+                    currentAudio.currentTime = 0;
+
+                    // 检查音频是否已加载
+                    if (currentAudio.readyState < 2) {
+                        console.log(`音频${recorderState.currentAudioIndex + 1}尚未加载完成，正在加载...`);
+                        await new Promise((resolve, reject) => {
+                            currentAudio.addEventListener('canplaythrough', resolve, { once: true });
+                            currentAudio.addEventListener('error', reject, { once: true });
+                            currentAudio.load();
+                        });
+                    }
+
+                    // 修改音频结束事件监听器
+                    currentAudio.addEventListener('ended', () => {
+                        // 只在第二段录音播放完毕时显示收录对话框
+                        if (recorderState.currentAudioIndex === 1) {
+                            recorderState.hasPlayedSecond = true;  // 标记已播放第二段录音
+                            showRecorderConfirmDialog();
+                        }
+                    }, { once: true });
+
+                    // 尝试播放
+                    try {
+                        const playPromise = currentAudio.play();
+                        if (playPromise !== undefined) {
+                            await playPromise;
+                            console.log(`音频${recorderState.currentAudioIndex + 1}播放成功`);
+                        }
+                    } catch (playError) {
+                        console.error(`音频${recorderState.currentAudioIndex + 1}播放失败:`, playError);
+                        
+                        // 如果是用户交互问题，尝试重新加载
+                        if (playError.name === 'NotAllowedError') {
+                            console.log('需要用户交互，尝试重新加载音频...');
+                            currentAudio.load();
+                        }
+                    }
+                } catch (error) {
+                    console.error('音频播放处理失败:', error);
+                }
+            }
+
+            // 修改显示录音收录对话框的函数
+            function showRecorderConfirmDialog() {
+                const confirmDialog = document.createElement('div');
+                confirmDialog.className = 'confirm-dialog';
+                confirmDialog.innerHTML = `
+                    <div class="message">是否存档？</div>
+                    <div class="buttons">
+                        <button class="confirm-btn">√</button>
+                        <button class="cancel-btn">×</button>
+                    </div>
+                `;
+                document.body.appendChild(confirmDialog);
+                
+                // 添加淡入效果
+                setTimeout(() => {
+                    confirmDialog.classList.add('active');
+                }, 100);
+
+                // 添加按钮点击事件
+                const confirmBtn = confirmDialog.querySelector('.confirm-btn');
+                const cancelBtn = confirmDialog.querySelector('.cancel-btn');
+                
+                function closeDialog(status) {
+                    // 记录状态
+                    recorderState.isCollected = status === 'collected';
+                    
+                    // 关闭确认对话框
+                    confirmDialog.classList.remove('active');
+                    setTimeout(() => {
+                        confirmDialog.remove();
+                    }, 300);
+
+                    // 关闭所有弹窗
+                    itemOverlay.style.opacity = '0';
+                    overlayBackdrop.style.opacity = '0';
+                    setTimeout(() => {
+                        itemOverlay.style.display = 'none';
+                        overlayBackdrop.style.display = 'none';
+                        handposeContainer.style.display = 'none';
+                    }, 300);
+                }
+
+                confirmBtn.addEventListener('click', function() {
+                    if (isRecorderActive) {
+                        handleArchive('recorder');
+                    } else if (isLetterActive) {
+                        handleArchive('letter');
+                    } else {
+                        handleArchive('frame');
+                    }
+                    confirmDialog.classList.remove('active');
+                    setTimeout(() => {
+                        confirmDialog.remove();
+                    }, 300);
+                });
+                cancelBtn.addEventListener('click', () => closeDialog('not_collected'));
+            }
+
+            // 启动摄像头
+            async function setupCamera() {
+                const camera = new Camera(cameraVideo, {
+                    onFrame: async () => {
+                        await hands.send({image: cameraVideo});
+                    },
+                    width: 200,
+                    height: 120,
+                    fps: 60 // 提高帧率以提高响应速度
+                });
+                await camera.start();
+            }
+
+            // 创建灰尘粒子
+            function createDustParticles(container) {
+                const particleCount = 400; // 从200增加到400个粒子
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'dust-particle';
+                    
+                    // 随机粒子大小
+                    const size = Math.random() * 10 + 1; // 增加粒子大小范围
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    // 随机位置
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 100;
+                    particle.style.left = `${x}%`;
+                    particle.style.top = `${y}%`;
+                    
+                    // 随机初始透明度
+                    particle.style.opacity = Math.random() * 0.6 + 0.4;
+                    
+                    // 随机初始旋转
+                    const initialRotation = Math.random() * 360;
+                    particle.style.transform = `rotate(${initialRotation}deg)`;
+                    
+                    container.appendChild(particle);
+                    dustParticles.push(particle);
+                }
+            }
+
+            // 粒子动画
+            function animateParticles() {
+                dustParticles.forEach(particle => {
+                    // 随机角度和距离
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 250 + 100; // 增加飞散距离
+                    
+                    // 随机旋转
+                    const rotation = Math.random() * 720; // 增加旋转角度
+                    
+                    // 随机延迟
+                    const delay = Math.random() * 0.5;
+                    particle.style.transitionDelay = `${delay}s`;
+                    
+                    // 设置飞散动画
+                    particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) rotate(${rotation}deg)`;
+                    particle.style.opacity = '0';
+                });
+            }
+
+            // 检测吹气
+            function detectBlowing(audioContext, analyser) {
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                let isTransitioning = false;  // 添加状态标记，防止重复触发
+                
+                function checkBlowing() {
+                    if (!isBlowing || isTransitioning) return;
+                    
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    
+                    // 检测低频声音（吹气声）
+                    if (average > 96) {  // 从80提高到96（增加20%）
+                        isTransitioning = true;  // 标记开始过渡
+                        
+                        // 立即触发粒子动画
+                        animateParticles();
+                        
+                        // 1秒后开始图片切换
+                        setTimeout(() => {
+                            const container = document.querySelector('.frame-container');
+                            if (container) {
+                                const originalImg = container.querySelector('.frame-image.original');
+                                const revealedImg = container.querySelector('.frame-image.revealed');
+                                
+                                if (originalImg && revealedImg) {
+                                    // 确保两张图片都准备好
+                                    originalImg.style.opacity = '1';
+                                    revealedImg.style.opacity = '0';
+                                    
+                                    // 添加过渡效果
+                                    originalImg.style.transition = 'opacity 3s cubic-bezier(0.4, 0, 0.2, 1)';
+                                    revealedImg.style.transition = 'all 3s cubic-bezier(0.4, 0, 0.2, 1)';
+                                    
+                                    // 平滑切换图片
+                                    setTimeout(() => {
+                                        originalImg.style.opacity = '0';
+                                        revealedImg.style.opacity = '1';
+                                        
+                                        // 添加移动和缩小效果
+                                        setTimeout(() => {
+                                            revealedImg.classList.add('moved');
+                                            
+                                            // 图片移动完成后显示文字
+                                            setTimeout(() => {
+                                                const text = document.createElement('div');
+                                                text.className = 'revealed-text active';
+                                                text.innerHTML = '<strong>JAMES Wilkerson</strong>在承重墙B-12中使用劣质材料';
+                                                container.appendChild(text);
+                                                
+                                                // 添加淡入效果
+                                                setTimeout(() => {
+                                                    text.classList.add('active');
+                                                    
+                                                    // 文字显示完成后显示确认对话框
+                                                    setTimeout(() => {
+                                                        const confirmDialog = document.createElement('div');
+                                                        confirmDialog.className = 'confirm-dialog';
+                                                        confirmDialog.innerHTML = `
+                                                            <div class="message">是否存档？</div>
+                                                            <div class="buttons">
+                                                                <button class="confirm-btn">√</button>
+                                                                <button class="cancel-btn">×</button>
+                                                            </div>
+                                                        `;
+                                                        document.body.appendChild(confirmDialog);
+                                                        
+                                                        // 添加淡入效果
+                                                        setTimeout(() => {
+                                                            confirmDialog.classList.add('active');
+                                                        }, 100);
+
+                                                        // 添加按钮点击事件
+                                                        const confirmBtn = confirmDialog.querySelector('.confirm-btn');
+                                                        const cancelBtn = confirmDialog.querySelector('.cancel-btn');
+                                                        
+                                                        function closeDialog(status) {
+                                                            frameStatus = status; // 记录状态
+                                                            confirmDialog.classList.remove('active');
+                                                            setTimeout(() => {
+                                                                confirmDialog.remove();
+                                                                // 关闭所有弹窗
+                                                                itemOverlay.style.opacity = '0';
+                                                                overlayBackdrop.style.opacity = '0';
+                                                                setTimeout(() => {
+                                                                    itemOverlay.style.display = 'none';
+                                                                    overlayBackdrop.style.display = 'none';
+                                                                }, 300);
+                                                            }, 300);
+                                                        }
+
+                                                        confirmBtn.addEventListener('click', () => closeDialog('collected'));
+                                                        cancelBtn.addEventListener('click', () => closeDialog('not_collected'));
+                                                    }, 1000); // 文字显示完成后等待1秒
+                                                }, 100);
+                                            }, 1500);
+                                        }, 1000);
+                                    }, 100);
+                                    
+                                    // 记录状态为已揭示
+                                    frameStatus = 'revealed';
+                                    
+                                    // 停止音频检测
+                                    audioContext.close();
+                                    
+                                    // 移除提示文本
+                                    const hintText = container.parentElement.querySelector('.hint-text');
+                                    if (hintText) {
+                                        hintText.style.transition = 'opacity 0.5s ease';
+                                        hintText.style.opacity = '0';
+                                        setTimeout(() => hintText.remove(), 500);
+                                    }
+                                }
+                            }
+                        }, 1000);
+                        
+                        // 停止检测
+                        isBlowing = false;
+                    }
+                    
+                    requestAnimationFrame(checkBlowing);
+                }
+                
+                checkBlowing();
+            }
+
+            // 检查点击是否在可交互区域内
+            hoverArea.addEventListener('click', function(e) {
+                const rect = hoverArea.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+                // 检查是否点击在墙上的相框区域
+                const isFrameArea = x >= 46 && x <= 51 && y >= 23 && y <= 33;
+
+                // 清空所有提示文本
+                const existingHints = document.querySelectorAll('.hint-text');
+                existingHints.forEach(hint => hint.remove());
+
+                if (isFrameArea) {
+                    if (frameStatus) { // 如果已经有状态记录
+                        // 直接显示揭示后的图片和文字
+                        const container = document.querySelector('.content-container');
+                        container.innerHTML = '';
+                        
+                        const frameContainer = document.createElement('div');
+                        frameContainer.className = 'frame-container';
+                        
+                        const revealedImg = document.createElement('img');
+                        revealedImg.src = revealedFrameImage;
+                        revealedImg.className = 'frame-image revealed moved'; // 添加moved类，直接显示在左侧
+                        revealedImg.style.opacity = '1';
+                        
+                        frameContainer.appendChild(revealedImg);
+                        container.appendChild(frameContainer);
+
+                        // 添加文字
+                        const text = document.createElement('div');
+                        text.className = 'revealed-text active'; // 直接添加active类，立即显示
+                        text.innerHTML = '<strong>JAMES Wilkerson</strong>在承重墙B-12中使用劣质材料';
+                        container.appendChild(text);
+                        
+                        itemOverlay.style.display = 'block';
+                        overlayBackdrop.style.display = 'block';
+                        itemOverlay.style.opacity = '1';
+
+                        // 显示状态提示对话框
+                        const statusDialog = document.createElement('div');
+                        statusDialog.className = 'status-dialog';
+                        statusDialog.textContent = frameStatus === 'collected' ? '已被存档' : '未被存档';
+                        document.body.appendChild(statusDialog);
+                        
+                        setTimeout(() => {
+                            statusDialog.classList.add('active');
+                        }, 100);
+
+                        // 2秒后自动关闭状态提示
+                        setTimeout(() => {
+                            statusDialog.classList.remove('active');
+                            setTimeout(() => {
+                                statusDialog.remove();
+                            }, 300);
+                        }, 2000);
+                    } else {
+                        // 第一次点击，显示原始图片和吹气提示
+                        const container = document.querySelector('.content-container');
+                        container.innerHTML = '';
+                        
+                        const frameContainer = document.createElement('div');
+                        frameContainer.className = 'frame-container';
+                        
+                        const originalImg = document.createElement('img');
+                        originalImg.src = originalFrameImage;
+                        originalImg.className = 'frame-image original';
+                        originalImg.style.opacity = '1';
+                        
+                        const revealedImg = document.createElement('img');
+                        revealedImg.src = revealedFrameImage;
+                        revealedImg.className = 'frame-image revealed';
+                        revealedImg.style.opacity = '0';
+                        
+                        frameContainer.appendChild(originalImg);
+                        frameContainer.appendChild(revealedImg);
+                        container.appendChild(frameContainer);
+                        
+                        // 创建灰尘粒子
+                        createDustParticles(frameContainer);
+                        
+                        // 添加吹气提示
+                        const frameHintText = document.createElement('div');
+                        frameHintText.className = 'hint-text';
+                        frameHintText.style.position = 'absolute';
+                        frameHintText.style.top = '20px';
+                        frameHintText.style.left = '50%';
+                        frameHintText.style.transform = 'translateX(-50%)';
+                        frameHintText.style.color = 'white';
+                        frameHintText.style.fontSize = '18px';
+                        frameHintText.style.textAlign = 'center';
+                        frameHintText.style.padding = '10px';
+                        frameHintText.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                        frameHintText.style.borderRadius = '5px';
+                        frameHintText.textContent = '请对着相框轻轻吹一口气';
+                        
+                        container.appendChild(frameHintText);
+                        
+                        itemOverlay.style.display = 'block';
+                        overlayBackdrop.style.display = 'block';
+                        itemOverlay.style.opacity = '1';
+                        
+                        // 初始化音频上下文和检测
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const analyser = audioContext.createAnalyser();
+                        analyser.fftSize = 256;
+                        
+                        // 获取麦克风权限并开始检测
+                        navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(stream => {
+                                const source = audioContext.createMediaStreamSource(stream);
+                                source.connect(analyser);
+                                isBlowing = true;
+                                detectBlowing(audioContext, analyser);
+                            })
+                            .catch(err => {
+                                console.error('无法访问麦克风:', err);
+                            });
+                    }
+                } else {
+                    // 检查是否点击在橱柜上的录音机区域
+                    const isRecorderArea = x >= 25 && x <= 40 && y >= 50 && y <= 62;
+
+                    if (isRecorderArea) {
+                        // 显示录音机图片
+                        const container = document.querySelector('.content-container');
+                        container.innerHTML = '';
+                        
+                        const recorderImg = document.createElement('img');
+                        recorderImg.src = 'assets/cabinet_recorder.png';
+                        recorderImg.style.maxWidth = '80%';
+                        recorderImg.style.maxHeight = '80%';
+                        recorderImg.style.objectFit = 'contain';
+                        recorderImg.style.opacity = '0';
+                        recorderImg.style.transition = 'all 2s cubic-bezier(0.4, 0, 0.2, 1)';
+                        recorderImg.style.position = 'relative';
+                        recorderImg.style.transform = 'translateX(0)';
+                        
+                        container.appendChild(recorderImg);
+                        
+                        // 如果已经播放过第二段录音，直接显示完整状态
+                        if (recorderState.hasPlayedSecond) {
+                            // 立即缩小并移动到左侧
+                            recorderImg.style.maxWidth = '60%';
+                            recorderImg.style.maxHeight = '60%';
+                            recorderImg.style.transform = 'translateX(-40%)';
+                            recorderState.isMinimized = true;
+
+                            // 显示两段录音文案
+                            recordingTexts.forEach((text, index) => {
+                                const textElement = document.createElement('div');
+                                textElement.className = 'recording-text';
+                                textElement.style.position = 'absolute';
+                                textElement.style.right = '5%';
+                                textElement.style.top = `${30 + index * 40}%`;  // 恢复原来的间距
+                                textElement.style.transform = 'translateY(-50%)';
+                                textElement.style.color = 'white';
+                                textElement.style.fontFamily = '"Courier New", monospace';
+                                textElement.style.fontSize = '16px';
+                                textElement.style.lineHeight = '1.6';
+                                textElement.style.maxWidth = '35%';
+                                textElement.style.opacity = '1';
+                                textElement.style.textShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+                                textElement.style.whiteSpace = 'pre-line';
+                                textElement.style.textAlign = 'left';
+                                textElement.style.padding = '20px';
+                                textElement.textContent = text;
+                                container.appendChild(textElement);
+                            });
+
+                            // 显示收录状态
+                            if (recorderState.isCollected !== null) {
+                                const statusDialog = document.createElement('div');
+                                statusDialog.className = 'status-dialog';
+                                statusDialog.textContent = recorderState.isCollected ? '已被存档' : '未被存档';
+                                document.body.appendChild(statusDialog);
+                                
+                                setTimeout(() => {
+                                    statusDialog.classList.add('active');
+                                }, 100);
+
+                                // 2秒后自动关闭状态提示
+                                setTimeout(() => {
+                                    statusDialog.classList.remove('active');
+                                    setTimeout(() => {
+                                        statusDialog.remove();
+                                    }, 300);
+                                }, 2000);
+                            }
+                        } else {
+                            // 添加提示文本
+                            const recorderHintText = document.createElement('div');
+                            recorderHintText.className = 'hint-text';
+                            recorderHintText.style.position = 'absolute';
+                            recorderHintText.style.top = '20px';
+                            recorderHintText.style.left = '50%';
+                            recorderHintText.style.transform = 'translateX(-50%)';
+                            recorderHintText.style.color = 'white';
+                            recorderHintText.style.fontSize = '18px';
+                            recorderHintText.style.textAlign = 'center';
+                            recorderHintText.style.padding = '10px';
+                            recorderHintText.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                            recorderHintText.style.borderRadius = '5px';
+                            recorderHintText.textContent = '捏合手指来播放两段录音';
+                            
+                            container.appendChild(recorderHintText);
+                        }
+                        
+                        itemOverlay.style.display = 'block';
+                        overlayBackdrop.style.display = 'block';
+                        itemOverlay.style.opacity = '1';
+                        
+                        // 添加淡入效果
+                        setTimeout(() => {
+                            recorderImg.style.opacity = '1';
+                        }, 100);
+
+                        // 初始化音频
+                        initializeAudio();
+
+                        // 显示手势识别界面
+                        handposeContainer.style.display = 'block';
+
+                        // 在点击录音机时设置状态
+                        isRecorderActive = true;
+                        isLetterActive = false;
+                    } else {
+                        // 检查是否点击在桌子上的信的区域
+                        const isLetterArea = x >= 80 && x <= 85 && y >= 64 && y <= 67;
+
+                        if (isLetterArea) {
+                            // 如果已经有状态，直接显示展开的信纸和文字
+                            if (letterStatus) {
+                                const container = document.querySelector('.content-container');
+                                container.innerHTML = '';
+                                
+                                // 创建图片容器
+                                const newImageContainer = document.createElement('div');
+                                newImageContainer.className = 'image-container';
+                                container.appendChild(newImageContainer);
+                                
+                                // 直接显示展开的信纸
+                                const unrolledImg = document.createElement('img');
+                                unrolledImg.src = letterUnrolledImage;
+                                unrolledImg.style.opacity = '1';
+                                unrolledImg.style.transform = 'translate(-120%, -50%)';
+                                newImageContainer.appendChild(unrolledImg);
+                                
+                                // 直接显示文字
+                                const letterContent = document.createElement('div');
+                                letterContent.className = 'letter-content';
+                                letterContent.style.opacity = '1';
+                                letterContent.style.right = '10%';
+                                letterContent.textContent = `我最亲爱的Eleanor：
+
+当你发现这封信时，最坏的情况已经发生了。不要相信救援中心，他们在余震警报上撒了谎。
+真相藏在我们放应急无线电的地方。
+阅后即焚。
+
+妈妈`;
+                                container.appendChild(letterContent);
+                                
+                                // 显示状态提示
+                                showStatusDialog(letterStatus);
+                                
+                                // 显示弹窗
+                                itemOverlay.style.display = 'block';
+                                overlayBackdrop.style.display = 'block';
+                                itemOverlay.style.opacity = '1';
+                                
+                                // 在点击信纸时设置状态
+                                isRecorderActive = false;
+                                isLetterActive = true;
+                                
+                                return;
+                            }
+                            
+                            // 第一次点击时显示手势识别界面
+                            handposeContainer.style.display = 'block';
+                            
+                            // 立即显示卷起的信纸
+                            const container = document.querySelector('.content-container');
+                            const imageContainer = document.createElement('div');
+                            imageContainer.className = 'image-container';
+                            
+                            const rolledImg = document.createElement('img');
+                            rolledImg.src = letterRolledImage;
+                            imageContainer.appendChild(rolledImg);
+                            
+                            container.innerHTML = '';
+                            container.appendChild(imageContainer);
+                            
+                            itemOverlay.style.display = 'block';
+                            overlayBackdrop.style.display = 'block';
+                            itemOverlay.style.opacity = '1';
+                            rolledImg.classList.add('active');
+
+                            // 添加信纸提示文本
+                            const letterHintText = document.createElement('div');
+                            letterHintText.className = 'hint-text';
+                            letterHintText.style.position = 'absolute';
+                            letterHintText.style.top = '20px';
+                            letterHintText.style.left = '50%';
+                            letterHintText.style.transform = 'translateX(-50%)';
+                            letterHintText.style.color = 'white';
+                            letterHintText.style.fontSize = '18px';
+                            letterHintText.style.textAlign = 'center';
+                            letterHintText.style.padding = '10px';
+                            letterHintText.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                            letterHintText.style.borderRadius = '5px';
+                            letterHintText.textContent = '请将手掌从左向右平滑来展开信纸';
+                            
+                            container.appendChild(letterHintText);
+
+                            // 在点击信纸时设置状态
+                            isRecorderActive = false;
+                            isLetterActive = true;
+                        }
+                    }
+                }
+            });
+
+            // 点击遮罩层关闭弹窗
+            overlayBackdrop.addEventListener('click', function() {
+                itemOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    itemOverlay.style.display = 'none';
+                    overlayBackdrop.style.display = 'none';
+                    handposeContainer.style.display = 'none';
+                }, 300);
+            });
+
+            // 阻止点击黑色底图时关闭
+            itemOverlay.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // 原有的视频相关代码
+            function updateDebugInfo(message) {
+                debugInfo.textContent = message;
+                console.log(message);
+            }
+
+            // 设置视频属性
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+            video.autoplay = true;
+
+            // 添加视频错误处理和自动恢复机制
+            let videoRetryCount = 0;
+            const maxRetries = 3;
+
+            async function playVideo() {
+                try {
+                    // 确保视频已加载
+                    if (video.readyState < 3) {
+                        console.log('等待视频加载...');
+                        await new Promise((resolve) => {
+                            video.addEventListener('canplay', resolve, { once: true });
+                        });
+                    }
+
+                    // 尝试播放视频
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        await playPromise;
+                        console.log('视频开始播放');
+                        videoRetryCount = 0; // 重置重试计数
+                    }
+                } catch (error) {
+                    console.error('视频播放失败:', error);
+                    
+                    // 如果是节能模式导致的错误，尝试恢复播放
+                    if (error.name === 'AbortError' && videoRetryCount < maxRetries) {
+                        videoRetryCount++;
+                        console.log(`尝试恢复播放 (${videoRetryCount}/${maxRetries})...`);
+                        
+                        // 等待一段时间后重试
+                        setTimeout(() => {
+                            playVideo();
+                        }, 1000);
+                    } else {
+                        updateDebugInfo(`视频播放失败: ${error.message}`);
+                    }
+                }
+            }
+
+            // 监听视频结束事件
+            video.addEventListener('ended', function() {
+                updateDebugInfo('视频播放完成，开始循环');
+                playVideo(); // 重新开始播放
+            });
+
+            // 监听视频错误
+            video.addEventListener('error', function(e) {
+                updateDebugInfo(`视频错误: ${video.error.message}`);
+                if (videoRetryCount < maxRetries) {
+                    videoRetryCount++;
+                    console.log(`尝试恢复播放 (${videoRetryCount}/${maxRetries})...`);
+                    setTimeout(() => {
+                        playVideo();
+                    }, 1000);
+                }
+            });
+
+            // 监听页面可见性变化
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    console.log('页面隐藏，暂停视频');
+                    video.pause();
+                } else {
+                    console.log('页面可见，恢复视频');
+                    playVideo();
+                }
+            });
+
+            // 监听视频暂停事件
+            video.addEventListener('pause', function() {
+                if (!document.hidden && videoRetryCount < maxRetries) {
+                    console.log('视频意外暂停，尝试恢复');
+                    videoRetryCount++;
+                    setTimeout(() => {
+                        playVideo();
+                    }, 1000);
+                }
+            });
+
+            // 开始播放视频
+            playVideo();
+
+            // 设置背景音乐
+            bgm.volume = 0.15; // 设置音量为15%
+            bgm.play().catch(error => {
+                console.error('背景音乐播放失败:', error);
+            });
+
+            // 当页面隐藏时暂停背景音乐
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    bgm.pause();
+                } else {
+                    bgm.play().catch(error => {
+                        console.error('背景音乐播放失败:', error);
+                    });
+                }
+            });
+
+            // 当离开页面时保存背景音乐状态
+            window.addEventListener('beforeunload', function() {
+                localStorage.setItem('bgmTime', bgm.currentTime);
+            });
+
+            // 检查是否有保存的背景音乐播放位置
+            const savedBgmTime = localStorage.getItem('bgmTime');
+            if (savedBgmTime) {
+                bgm.currentTime = parseFloat(savedBgmTime);
+            }
+
+            // 显示系统提示词
+            const systemPrompt = document.getElementById('systemPrompt');
+            systemPrompt.style.opacity = '1';
+
+            // 添加下一页按钮点击事件
+            const nextPageButton = document.getElementById('nextPageButton');
+            nextPageButton.addEventListener('click', function() {
+                // 检查是否所有物品都被存档
+                const allCollected = recorderState.isCollected && 
+                                  letterStatus === 'collected' && 
+                                  frameStatus === 'collected';
+                
+                if (allCollected) {
+                    // 如果所有物品都被存档，直接跳转
+                    window.location.href = './scene3.html';
+                } else {
+                    // 如果还有物品未被存档，显示提示
+                    const confirmDialog = document.createElement('div');
+                    confirmDialog.className = 'confirm-dialog';
+                    confirmDialog.innerHTML = `
+                        <div class="message">还有物品未被存档，确定要离开吗？</div>
+                        <div class="buttons">
+                            <button class="confirm-btn">√</button>
+                            <button class="cancel-btn">×</button>
+                        </div>
+                    `;
+                    document.body.appendChild(confirmDialog);
+                    
+                    setTimeout(() => {
+                        confirmDialog.classList.add('active');
+                    }, 100);
+
+                    const confirmBtn = confirmDialog.querySelector('.confirm-btn');
+                    const cancelBtn = confirmDialog.querySelector('.cancel-btn');
+                    
+                    confirmBtn.addEventListener('click', () => {
+                        window.location.href = './scene3.html';
+                    });
+                    
+                    cancelBtn.addEventListener('click', () => {
+                        confirmDialog.classList.remove('active');
+                        setTimeout(() => {
+                            confirmDialog.remove();
+                        }, 300);
+                    });
+                }
+            });
+
+            // 显示状态对话框
+            function showStatusDialog(status) {
+                const confirmDialog = document.createElement('div');
+                confirmDialog.className = 'confirm-dialog';
+                confirmDialog.innerHTML = `
+                    <div class="message">${status === 'collected' ? '已被存档' : '未被存档'}</div>
+                `;
+                document.body.appendChild(confirmDialog);
+                
+                setTimeout(() => {
+                    confirmDialog.classList.add('active');
+                }, 100);
+
+                // 2秒后自动关闭
+                setTimeout(() => {
+                    confirmDialog.classList.remove('active');
+                    setTimeout(() => {
+                        confirmDialog.remove();
+                    }, 300);
+                }, 2000);
+            }
+
+            // 展开信纸动画
+            function unrollLetter() {
+                const container = document.querySelector('.content-container');
+                if (!container) {
+                    console.error('找不到内容容器');
+                    return;
+                }
+
+                // 如果已经有状态，直接显示展开的信纸和文字
+                if (letterStatus) {
+                    // 清空容器
+                    container.innerHTML = '';
+                    
+                    // 创建图片容器
+                    const newImageContainer = document.createElement('div');
+                    newImageContainer.className = 'image-container';
+                    container.appendChild(newImageContainer);
+                    
+                    // 直接显示展开的信纸
+                    const unrolledImg = document.createElement('img');
+                    unrolledImg.src = letterUnrolledImage;
+                    unrolledImg.style.opacity = '1';
+                    unrolledImg.style.transform = 'translate(-120%, -50%)';
+                    newImageContainer.appendChild(unrolledImg);
+                    
+                    // 直接显示文字
+                    const letterContent = document.createElement('div');
+                    letterContent.className = 'letter-content';
+                    letterContent.style.opacity = '1';
+                    letterContent.style.right = '10%';
+                    letterContent.textContent = `我最亲爱的Eleanor：
+
+当你发现这封信时，最坏的情况已经发生了。不要相信救援中心，他们在余震警报上撒了谎。
+真相藏在我们放应急无线电的地方。
+阅后即焚。
+
+妈妈`;
+                    container.appendChild(letterContent);
+                    
+                    // 显示状态提示
+                    showStatusDialog(letterStatus);
+                    
+                    return;
+                }
+
+                // 确保容器存在
+                if (!container) {
+                    console.error('找不到内容容器');
+                    return;
+                }
+
+                // 创建图片容器
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'image-container';
+                container.innerHTML = '';
+                container.appendChild(imageContainer);
+
+                // 创建卷起的信纸图片
+                const rolledImg = document.createElement('img');
+                rolledImg.src = letterRolledImage;
+                rolledImg.classList.add('active');
+                imageContainer.appendChild(rolledImg);
+                
+                // 创建展开的信纸图片
+                const unrolledImg = document.createElement('img');
+                unrolledImg.src = letterUnrolledImage;
+                imageContainer.appendChild(unrolledImg);
+
+                // 添加信纸提示文本
+                const letterHintText = document.createElement('div');
+                letterHintText.className = 'hint-text';
+                letterHintText.style.position = 'absolute';
+                letterHintText.style.top = '20px';
+                letterHintText.style.left = '50%';
+                letterHintText.style.transform = 'translateX(-50%)';
+                letterHintText.style.color = 'white';
+                letterHintText.style.fontSize = '18px';
+                letterHintText.style.textAlign = 'center';
+                letterHintText.style.padding = '10px';
+                letterHintText.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                letterHintText.style.borderRadius = '5px';
+                letterHintText.textContent = '请将手掌从左向右平滑来展开信纸';
+                letterHintText.style.transition = 'opacity 0.5s ease';
+                
+                container.appendChild(letterHintText);
+                
+                // 2秒后平滑切换到展开的信纸
+                setTimeout(() => {
+                    // 淡出提示文本
+                    letterHintText.style.opacity = '0';
+                    setTimeout(() => {
+                        letterHintText.remove();
+                    }, 500);
+
+                    rolledImg.classList.remove('active');
+                    unrolledImg.classList.add('active');
+                    
+                    // 1秒后将展开的信纸移动到左侧
+                    setTimeout(() => {
+                        unrolledImg.classList.add('move-left');
+                        
+                        // 信纸移动完成后，显示信件内容
+                        setTimeout(() => {
+                            const letterContent = document.createElement('div');
+                            letterContent.className = 'letter-content';
+                            letterContent.textContent = `我最亲爱的Eleanor：
+
+当你发现这封信时，最坏的情况已经发生了。不要相信救援中心，他们在余震警报上撒了谎。
+真相藏在我们放应急无线电的地方。
+阅后即焚。
+
+妈妈`;
+                            container.appendChild(letterContent);
+                            
+                            // 添加淡入效果
+                            setTimeout(() => {
+                                letterContent.classList.add('active');
+                                
+                                // 等待文字完全显示后显示确认对话框
+                                setTimeout(() => {
+                                    const confirmDialog = document.createElement('div');
+                                    confirmDialog.className = 'confirm-dialog';
+                                    confirmDialog.innerHTML = `
+                                        <div class="message">是否存档？</div>
+                                        <div class="buttons">
+                                            <button class="confirm-btn">√</button>
+                                            <button class="cancel-btn">×</button>
+                                        </div>
+                                    `;
+                                    document.body.appendChild(confirmDialog);
+                                    
+                                    // 添加淡入效果
+                                    setTimeout(() => {
+                                        confirmDialog.classList.add('active');
+                                    }, 100);
+
+                                    // 添加按钮点击事件
+                                    const confirmBtn = confirmDialog.querySelector('.confirm-btn');
+                                    const cancelBtn = confirmDialog.querySelector('.cancel-btn');
+                                    
+                                    function closeDialog(status) {
+                                        letterStatus = status; // 记录状态
+                                        confirmDialog.classList.remove('active');
+                                        setTimeout(() => {
+                                            confirmDialog.remove();
+                                            // 关闭所有弹窗
+                                            itemOverlay.style.opacity = '0';
+                                            overlayBackdrop.style.opacity = '0';
+                                            setTimeout(() => {
+                                                itemOverlay.style.display = 'none';
+                                                overlayBackdrop.style.display = 'none';
+                                                handposeContainer.style.display = 'none';
+                                            }, 300);
+                                        }, 300);
+                                    }
+
+                                    confirmBtn.addEventListener('click', () => closeDialog('collected'));
+                                    cancelBtn.addEventListener('click', () => closeDialog('not_collected'));
+                                }, 1500); // 等待文字动画完成
+                            }, 100);
+                        }, 1000);
+                    }, 1000);
+                }, 2000);
+            }
+
+            // 可交互区域定义（根据实际视频中的物体位置调整）
+            const interactiveAreas = [
+                {
+                    x: 46, // 墙上的相框
+                    y: 23,
+                    width: 5,
+                    height: 10,
+                    image: 'assets/wall_frame.png',
+                    description: '墙上的相框'
+                },
+                {
+                    x: 25, // 橱柜上的录音机
+                    y: 50,
+                    width: 15,
+                    height: 12,
+                    image: 'assets/cabinet_recorder.png',
+                    description: '橱柜上的录音机'
+                },
+                {
+                    x: 80, // 桌子上的信
+                    y: 64,
+                    width: 5,
+                    height: 3,
+                    image: letterRolledImage,
+                    description: '桌子上的信',
+                    isGestureControlled: true
+                }
+            ];
+
+            // 创建调试用的圆圈
+            function createDebugCircles() {
+                interactiveAreas.forEach((area, index) => {
+                    // 创建金色光圈
+                    const glow = document.createElement('div');
+                    glow.className = 'golden-glow';
+                    // 计算中心点位置
+                    const centerX = area.x + (area.width / 2);
+                    const centerY = area.y + (area.height / 2);
+                    // 设置光圈大小为原来的二分之一
+                    const glowSize = Math.min(area.width, area.height) / 2;
+                    // 设置位置，使光圈居中
+                    glow.style.left = (centerX - glowSize/2) + '%';
+                    glow.style.top = (centerY - glowSize/2) + '%';
+                    glow.style.width = glowSize + '%';
+                    glow.style.height = glowSize + '%';
+                    debugCircles.appendChild(glow);
+                });
+            }
+
+            // 初始化调试圆圈
+            createDebugCircles();
+
+            // 初始化手势识别
+            initHands();
+            setupCamera();
+
+            // 初始化音频
+            async function initializeAudio() {
+                try {
+                    // 创建音频上下文
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('音频上下文已创建:', audioContext.state);
+
+                    // 创建音频元素并验证文件是否存在
+                    const audioFiles = [
+                        { path: 'assets/recording1.m4a', name: 'recording1.m4a' },
+                        { path: 'assets/recording2.m4a', name: 'recording2.m4a' }
+                    ];
+
+                    // 验证音频文件是否存在
+                    for (const file of audioFiles) {
+                        try {
+                            console.log(`尝试加载音频文件: ${file.path}`);
+                            const response = await fetch(file.path);
+                            if (!response.ok) {
+                                throw new Error(`文件 ${file.name} 不存在 (${response.status})`);
+                            }
+                            console.log(`文件 ${file.name} 存在且可访问`);
+                        } catch (error) {
+                            console.error(`检查文件 ${file.name} 时出错:`, error);
+                            // 尝试使用不同的路径格式
+                            const alternativePaths = [
+                                `./${file.path}`,
+                                `/${file.path}`,
+                                `../${file.path}`
+                            ];
+                            
+                            for (const altPath of alternativePaths) {
+                                try {
+                                    console.log(`尝试替代路径: ${altPath}`);
+                                    const altResponse = await fetch(altPath);
+                                    if (altResponse.ok) {
+                                        console.log(`找到可用的替代路径: ${altPath}`);
+                                        file.path = altPath;
+                                        break;
+                                    }
+                                } catch (altError) {
+                                    console.log(`替代路径 ${altPath} 不可用`);
+                                }
+                            }
+                        }
+                    }
+
+                    // 创建音频元素
+                    const audio1 = new Audio(audioFiles[0].path);
+                    const audio2 = new Audio(audioFiles[1].path);
+
+                    // 设置音频属性
+                    [audio1, audio2].forEach(audio => {
+                        audio.volume = 1.0;
+                        audio.preload = 'auto';
+                    });
+
+                    // 添加音频加载和错误处理
+                    [audio1, audio2].forEach((audio, index) => {
+                        console.log(`初始化音频${index + 1}`);
+                        console.log(`音频${index + 1}路径:`, audio.src);
+                        
+                        // 监听加载进度
+                        audio.addEventListener('loadstart', () => {
+                            console.log(`音频${index + 1}开始加载`);
+                        });
+                        
+                        audio.addEventListener('progress', () => {
+                            console.log(`音频${index + 1}加载进度:`, audio.readyState);
+                        });
+                        
+                        audio.addEventListener('canplay', () => {
+                            console.log(`音频${index + 1}可以播放`);
+                        });
+                        
+                        audio.addEventListener('canplaythrough', () => {
+                            console.log(`音频${index + 1}已完全加载，可以播放到结束`);
+                        });
+                        
+                        audio.addEventListener('error', (e) => {
+                            console.error(`音频${index + 1}加载错误:`, e);
+                            console.error('错误代码:', audio.error.code);
+                            console.error('错误信息:', audio.error.message);
+                            console.error('音频URL:', audio.src);
+                            
+                            // 尝试重新加载
+                            console.log(`尝试重新加载音频${index + 1}`);
+                            audio.load();
+                        });
+                        
+                        audio.addEventListener('playing', () => {
+                            console.log(`音频${index + 1}开始播放`);
+                        });
+                        
+                        audio.addEventListener('ended', () => {
+                            console.log(`音频${index + 1}播放结束`);
+                        });
+                        
+                        // 预加载音频
+                        console.log(`开始加载音频${index + 1}`);
+                        audio.load();
+                    });
+
+                    audioElements = [audio1, audio2];
+                    console.log('音频初始化完成');
+
+                } catch (error) {
+                    console.error('音频初始化失败:', error);
+                }
+            }
+
+            // 修改录音机动画函数
+            function animateRecorder() {
+                const recorderImg = document.querySelector('.content-container img');
+                if (!recorderImg) return;
+
+                // 设置过渡效果，增加动画时间到2秒
+                recorderImg.style.transition = 'all 2s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                // 缩小到原来的60%
+                recorderImg.style.maxWidth = '60%';
+                recorderImg.style.maxHeight = '60%';
+                // 向左移动到-40%的位置
+                recorderImg.style.transform = 'translateX(-40%)';
+                
+                recorderState.isMinimized = true;
+
+                // 在动画结束后显示文案
+                setTimeout(() => {
+                    showRecordingText(recorderState.currentAudioIndex);
+                }, 2000);
+            }
+
+            // 添加显示录音文案的函数
+            function showRecordingText(index) {
+                const container = document.querySelector('.content-container');
+                
+                // 移除旧的文案（如果存在）
+                const oldText = container.querySelector('.recording-text');
+                if (oldText) {
+                    oldText.remove();
+                }
+
+                // 创建新的文案元素
+                const textElement = document.createElement('div');
+                textElement.className = 'recording-text';
+                textElement.style.position = 'absolute';
+                textElement.style.right = '5%';
+                textElement.style.top = '50%';
+                textElement.style.transform = 'translateY(-50%)';
+                textElement.style.color = 'white';
+                textElement.style.fontFamily = '"Courier New", monospace';
+                textElement.style.fontSize = '18px';
+                textElement.style.lineHeight = '1.6';
+                textElement.style.maxWidth = '35%';
+                textElement.style.opacity = '0';
+                textElement.style.transition = 'opacity 1s ease';
+                textElement.style.textShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+                textElement.style.whiteSpace = 'pre-line';
+                textElement.style.textAlign = 'left';
+                textElement.style.padding = '20px';
+                
+                // 设置文案内容
+                textElement.textContent = recordingTexts[index];
+                
+                // 添加到容器
+                container.appendChild(textElement);
+                
+                // 淡入显示
+                setTimeout(() => {
+                    textElement.style.opacity = '1';
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html> 

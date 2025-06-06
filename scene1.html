@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>场景一 - 沉默档案：2586</title>
+    <link rel="stylesheet" href="styles.css"/>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: "Courier New", monospace;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .video-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .scene-content {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            color: #fff;
+            text-shadow: none;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+        }
+
+        .scene-content h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #fff;
+            font-family: "Courier New", monospace;
+        }
+
+        .dialogue-btn {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: "Courier New", monospace;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .dialogue-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.05);
+        }
+
+        /* 根据图片中人物的位置调整按钮位置 */
+        .btn-1 {
+            top: 25%;
+            left: 25%;
+        }
+
+        .btn-2 {
+            top: 35%;
+            left: 50%;
+        }
+
+        .btn-3 {
+            top: 50%;
+            left: 73%;
+        }
+
+        .dialogue-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            font-size: 20px;
+            line-height: 1.6;
+            z-index: 3;
+            display: none;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .version-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .version-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: "Courier New", monospace;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .version-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        #debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 4;
+        }
+
+        .next-page-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 30px;
+            color: #fff;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .next-page-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        .next-page-btn::after {
+            content: '→';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 添加系统提示词样式 */
+        .system-prompt {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            z-index: 10;
+            font-family: "Courier New", monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video id="bgVideo" class="video-bg" muted loop playsinline>
+            <source src="assets/scene1.mp4" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+
+    <!-- 添加背景音乐 -->
+    <audio id="bgm" loop>
+        <source src="assets/audio/main_bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="scene-content">
+        <h1>场景一：邮局</h1>
+    </div>
+
+    <!-- 添加系统提示词 -->
+    <div class="system-prompt">请任意点击对话获得线索</div>
+
+    <button class="dialogue-btn btn-1">对话一</button>
+    <button class="dialogue-btn btn-2">对话二</button>
+    <button class="dialogue-btn btn-3">对话三</button>
+
+    <div id="dialogueBox" class="dialogue-box">
+        <div id="dialogueText"></div>
+        <div class="version-buttons">
+            <button class="version-btn" id="unofficialBtn">未公开版本</button>
+            <button class="version-btn" id="officialBtn">官方版本</button>
+        </div>
+    </div>
+
+    <div id="debug-info"></div>
+
+    <button class="next-page-btn" id="nextPageBtn" title="下一页"></button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('bgVideo');
+            const bgm = document.getElementById('bgm');
+            const debugInfo = document.getElementById('debug-info');
+            const dialogueBox = document.getElementById('dialogueBox');
+            const dialogueText = document.getElementById('dialogueText');
+            const unofficialBtn = document.getElementById('unofficialBtn');
+            const officialBtn = document.getElementById('officialBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+            
+            // 对话内容
+            const dialogues = {
+                'btn-1': "经过一段时间的全力抢修，受灾核心区域的电力与通讯已基本恢复正常运行，目前仅剩少数偏远地区仍在逐步恢复中。虽然这些区域的网络信号尚存在短暂延迟，但我们相信在抢修人员的持续努力下，全面覆盖指日可待。",
+                'btn-2': "在经过快速筛查后，我们成功为所有伤员提供了紧急救治。随着后续支援的到来，我们会继续保持救援的力度，确保所有受伤人员得到治疗。",
+                'btn-3': "物资分配不是很平衡，有一大部分的遇难人群拿不到食物和水，特别是一些被遗忘的区域。我们被告知要按照程序分配物资，许多地方的灾民在等待着救援"
+            };
+
+            // 添加选择记录
+            let choices = {
+                unofficial: [], // 存储未公开版本的选择
+                official: []    // 存储官方版本的选择
+            };
+
+            // 隐藏对话框的函数
+            function hideDialogue() {
+                dialogueBox.style.display = 'none';
+            }
+
+            // 为版本按钮添加点击事件
+            unofficialBtn.addEventListener('click', function() {
+                const currentDialogue = dialogueText.textContent;
+                choices.unofficial.push(currentDialogue);
+                localStorage.setItem('scene1Choices', JSON.stringify(choices));
+                hideDialogue();
+            });
+
+            officialBtn.addEventListener('click', function() {
+                const currentDialogue = dialogueText.textContent;
+                choices.official.push(currentDialogue);
+                localStorage.setItem('scene1Choices', JSON.stringify(choices));
+                hideDialogue();
+            });
+
+            // 创建音频元素
+            const audio1 = new Audio('assets/audio/dialogue1.m4a');
+            const audio2 = new Audio('assets/audio/dialogue2.m4a');
+            const audio3 = new Audio('assets/audio/dialogue3.m4a');
+
+            // 设置对话音频音量
+            audio1.volume = 0.3;
+
+            // 存储当前播放的音频
+            let currentAudio = null;
+
+            // 停止当前播放的音频
+            function stopCurrentAudio() {
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+            }
+
+            // 显示对话的函数
+            function showDialogue(number) {
+                const dialogue = dialogues[`btn-${number}`];
+                dialogueText.textContent = dialogue;
+                dialogueBox.style.display = 'block';
+            }
+
+            // 对话一按钮点击事件
+            document.querySelector('.btn-1').addEventListener('click', function() {
+                stopCurrentAudio();
+                currentAudio = audio1;
+                audio1.play().catch(error => {
+                    console.error('音频播放失败:', error);
+                });
+                showDialogue(1);
+            });
+
+            // 对话二按钮点击事件
+            document.querySelector('.btn-2').addEventListener('click', function() {
+                stopCurrentAudio();
+                currentAudio = audio2;
+                audio2.play().catch(error => {
+                    console.error('音频播放失败:', error);
+                });
+                showDialogue(2);
+            });
+
+            // 对话三按钮点击事件
+            document.querySelector('.btn-3').addEventListener('click', function() {
+                stopCurrentAudio();
+                currentAudio = audio3;
+                audio3.play().catch(error => {
+                    console.error('音频播放失败:', error);
+                });
+                showDialogue(3);
+            });
+
+            // 当页面隐藏时停止音频播放
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopCurrentAudio();
+                }
+            });
+
+            // 当离开页面时停止音频播放
+            window.addEventListener('beforeunload', function() {
+                stopCurrentAudio();
+            });
+
+            function updateDebugInfo(message) {
+                debugInfo.textContent = message;
+                console.log(message);
+            }
+
+            // 设置视频属性
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+
+            // 监听视频结束事件
+            video.addEventListener('ended', function() {
+                updateDebugInfo('视频播放完成，开始循环');
+            });
+
+            // 监听视频错误
+            video.addEventListener('error', function(e) {
+                updateDebugInfo(`视频错误: ${video.error.message}`);
+            });
+
+            // 自动播放视频
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    updateDebugInfo('视频开始播放');
+                }).catch(error => {
+                    updateDebugInfo(`视频播放失败: ${error.message}`);
+                    console.error('视频播放失败:', error);
+                });
+            }
+
+            // 设置背景音乐
+            bgm.volume = 0.15; // 设置音量为15%
+            bgm.play().catch(error => {
+                console.error('背景音乐播放失败:', error);
+            });
+
+            // 当页面隐藏时暂停背景音乐
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    bgm.pause();
+                } else {
+                    bgm.play().catch(error => {
+                        console.error('背景音乐播放失败:', error);
+                    });
+                }
+            });
+
+            // 当离开页面时保存背景音乐状态
+            window.addEventListener('beforeunload', function() {
+                localStorage.setItem('bgmTime', bgm.currentTime);
+            });
+
+            // 检查是否有保存的背景音乐播放位置
+            const savedBgmTime = localStorage.getItem('bgmTime');
+            if (savedBgmTime) {
+                bgm.currentTime = parseFloat(savedBgmTime);
+            }
+
+            // 添加下一页按钮点击事件
+            nextPageBtn.addEventListener('click', function() {
+                // 这里可以添加过渡动画或其他效果
+                window.location.href = 'scene2.html';
+            });
+        });
+    </script>
+</body>
+</html> 

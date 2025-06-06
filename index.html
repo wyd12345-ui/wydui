@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>沉默档案：2586</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <!-- 🔹 开场文字介绍 -->
+  <div id="intro" class="overlay">
+    <h1 class="title">2586年｜信息战争后的残存数据重建行动</h1>
+    <div class="mission-text">
+        <p>你是一名"历史考古者"</p>
+        <p>任务：追溯地球旧文明中的一起重大事件 —— "地震救援神话"</p>
+        <p>目标：挖掘碎片之中被遗忘的真实情绪与个体命运</p>
+        <p class="warning">请谨慎甄别：你看到的，不一定是真相</p>
+    </div>
+    <button id="start-btn">开始探索</button>
+  </div>
+
+  <!-- 🔹 主场景（初始隐藏） -->
+  <div id="main-scene" class="hidden">
+    <canvas id="p5-canvas"></canvas>
+    <!-- 可动态添加交互模块 -->
+  </div>
+
+  <!-- 添加背景音乐 -->
+  <audio id="bgm" loop>
+    <source src="assets/audio/main_bgm.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="sketch.js"></script>
+  <script src="logic.js"></script>
+  <script src="parallax.js"></script>
+  <script src="typewriter.js"></script>
+
+  <script>
+    // 设置背景音乐
+    const bgm = document.getElementById('bgm');
+    bgm.volume = 0.15; // 设置音量为15%
+
+    // 当文字开始出现时播放背景音乐
+    const observer = new MutationObserver((mutations) => {
+        const missionText = document.querySelector('.mission-text');
+        if (missionText && missionText.textContent.includes('你是一名"历史考古者"')) {
+            bgm.play().catch(error => {
+                console.error('背景音乐播放失败:', error);
+            });
+            observer.disconnect(); // 停止观察
+        }
+    });
+
+    // 开始观察文字变化
+    observer.observe(document.body, { 
+        childList: true, 
+        subtree: true,
+        characterData: true 
+    });
+
+    // 处理开始探索按钮点击
+    document.getElementById('start-btn').addEventListener('click', function() {
+        // 保存当前音乐播放位置
+        localStorage.setItem('bgmTime', bgm.currentTime);
+        // 跳转到下一个页面
+        window.location.href = './scene1.html';
+    });
+  </script>
+</body>
+</html>
